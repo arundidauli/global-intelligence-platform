@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://api.apify.com https://nominatim.openstreetmap.org; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>LeadScope — Global Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Cabinet+Grotesk:wght@400;500;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+
+<div class="bg-fx">
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+  <div class="bg-grid"></div>
+</div>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">LeadScope</div>
+      <div class="logo-sub">Global Intelligence</div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Modules</div>
+      <div class="nav-item active" data-page="business">
+        <span class="icon">🏭</span> Business Leads
+        <span class="nav-badge" id="nb-biz">0</span>
+      </div>
+      <div class="nav-item" data-page="jobs">
+        <span class="icon">💼</span> Job Search
+        <span class="nav-badge" id="nb-jobs">0</span>
+      </div>
+      <div class="nav-item" data-page="people">
+        <span class="icon">👤</span> People Finder
+        <span class="nav-badge" id="nb-people">0</span>
+      </div>
+    </div>
+
+    <div class="nav-section" style="margin-top:8px">
+      <div class="nav-label">Data</div>
+      <div class="nav-item" data-page="saved">
+        <span class="icon">🔖</span> Saved Leads
+        <span class="nav-badge" id="nb-saved">0</span>
+      </div>
+      <div class="nav-item" data-page="exports">
+        <span class="icon">📤</span> Export Center
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <div class="api-key-mini">
+        <div class="api-key-link-row">
+          <a class="api-key-link" href="https://console.apify.com/account/integrations" target="_blank" rel="noopener noreferrer">Get Apify API Key</a>
+        </div>
+        <div class="api-label">Apify API Key</div>
+        <input class="api-input-mini" type="password" id="sidebar-key"
+          placeholder="apify_api_...">
+        <div class="api-key-note">Saved only in this browser for this user. Remove it anytime.</div>
+        <div class="api-status">
+          <div class="dot" id="key-dot"></div>
+          <span id="key-status">No key entered</span>
+        </div>
+        <div class="api-key-actions">
+          <button class="btn-outline api-key-remove" id="remove-key-btn" type="button">Remove Saved Key</button>
+        </div>
+      </div>
+      <div class="api-key-mini support-log">
+        <div class="api-label">Support Log</div>
+        <pre class="support-log-output" id="support-log-output">No errors logged.</pre>
+        <button class="btn-outline support-log-copy" id="copy-support-log-btn" type="button">Copy Log</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="main">
+
+    <!-- ============ BUSINESS LEADS PAGE ============ -->
+    <div class="page active" id="page-business">
+
+      <div class="page-header">
+        <div class="page-eyebrow">Business Intelligence</div>
+        <div class="page-title">Global Business<br>Lead Finder</div>
+        <div class="page-desc">Find exporters, importers, manufacturers & trading companies anywhere in the world using Google Maps data.</div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card blue"><div class="stat-num" id="bs-total">0</div><div class="stat-lbl">Total Leads</div></div>
+        <div class="stat-card teal"><div class="stat-num" id="bs-phone">0</div><div class="stat-lbl">With Phone</div></div>
+        <div class="stat-card orange"><div class="stat-num" id="bs-web">0</div><div class="stat-lbl">With Website</div></div>
+        <div class="stat-card purple"><div class="stat-num" id="bs-rating">—</div><div class="stat-lbl">Avg Rating</div></div>
+      </div>
+
+      <!-- Search Config -->
+      <div class="search-card">
+        <div class="sc-title">Location Targeting</div>
+        <div class="form-grid fg-4">
+          <div class="fld">
+            <label>Country</label>
+            <select id="b-country">
+              <option value="">— Any Country —</option>
+              <option value="India" selected>🇮🇳 India</option>
+              <option value="United States">🇺🇸 United States</option>
+              <option value="United Kingdom">🇬🇧 United Kingdom</option>
+              <option value="United Arab Emirates">🇦🇪 UAE</option>
+              <option value="China">🇨🇳 China</option>
+              <option value="Germany">🇩🇪 Germany</option>
+              <option value="Turkey">🇹🇷 Turkey</option>
+              <option value="Bangladesh">🇧🇩 Bangladesh</option>
+              <option value="Pakistan">🇵🇰 Pakistan</option>
+              <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="Australia">🇦🇺 Australia</option>
+              <option value="Singapore">🇸🇬 Singapore</option>
+              <option value="Japan">🇯🇵 Japan</option>
+              <option value="South Korea">🇰🇷 South Korea</option>
+              <option value="Italy">🇮🇹 Italy</option>
+              <option value="France">🇫🇷 France</option>
+              <option value="Netherlands">🇳🇱 Netherlands</option>
+              <option value="Brazil">🇧🇷 Brazil</option>
+              <option value="Mexico">🇲🇽 Mexico</option>
+              <option value="Indonesia">🇮🇩 Indonesia</option>
+              <option value="Malaysia">🇲🇾 Malaysia</option>
+              <option value="Vietnam">🇻🇳 Vietnam</option>
+              <option value="Thailand">🇹🇭 Thailand</option>
+              <option value="Egypt">🇪🇬 Egypt</option>
+              <option value="Nigeria">🇳🇬 Nigeria</option>
+              <option value="South Africa">🇿🇦 South Africa</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>State / Region</label>
+            <input type="text" id="b-state" list="b-state-suggestions" placeholder="e.g. Uttar Pradesh, Texas...">
+          </div>
+          <div class="fld">
+            <label>City / District</label>
+            <input type="text" id="b-city" list="b-city-suggestions" placeholder="e.g. Moradabad, Dubai...">
+          </div>
+          <div class="fld">
+            <label>Locality / Area</label>
+            <input type="text" id="b-area" placeholder="e.g. Industrial Area, MIDC...">
+          </div>
+        </div>
+
+        <div class="world-hint">
+          <span class="world-globe">🌍</span>
+          <div>
+            <strong style="color:var(--text)">Targeting:</strong>
+            <span id="b-loc-hint" style="color:var(--blue)"> Moradabad, Uttar Pradesh, India</span>
+            <span style="display:block;font-size:11px;margin-top:2px;font-family:'JetBrains Mono',monospace">Fill location above → auto-builds search queries</span>
+          </div>
+        </div>
+
+        <div class="location-assist" id="loc-assist">
+          <div class="location-assist-line" id="b-loc-normalized">Normalized target: Moradabad, Uttar Pradesh, India</div>
+          <div class="location-assist-line ok" id="b-loc-verified" style="display:none"></div>
+          <div class="location-assist-line warn" id="b-loc-warning" style="display:none"></div>
+        </div>
+
+        <datalist id="b-state-suggestions">
+          <option value="Uttar Pradesh"></option>
+          <option value="Maharashtra"></option>
+          <option value="Delhi"></option>
+          <option value="Gujarat"></option>
+          <option value="Tamil Nadu"></option>
+          <option value="Karnataka"></option>
+          <option value="Rajasthan"></option>
+          <option value="Punjab"></option>
+          <option value="Haryana"></option>
+          <option value="West Bengal"></option>
+          <option value="California"></option>
+          <option value="Texas"></option>
+          <option value="New York"></option>
+          <option value="Florida"></option>
+          <option value="Illinois"></option>
+          <option value="England"></option>
+          <option value="Scotland"></option>
+          <option value="Dubai"></option>
+          <option value="Abu Dhabi"></option>
+          <option value="Ontario"></option>
+          <option value="British Columbia"></option>
+          <option value="New South Wales"></option>
+          <option value="Victoria"></option>
+        </datalist>
+
+        <datalist id="b-city-suggestions">
+          <option value="Moradabad"></option>
+          <option value="Mumbai"></option>
+          <option value="Delhi"></option>
+          <option value="Bengaluru"></option>
+          <option value="Chennai"></option>
+          <option value="Hyderabad"></option>
+          <option value="Ahmedabad"></option>
+          <option value="Surat"></option>
+          <option value="Jaipur"></option>
+          <option value="Dubai"></option>
+          <option value="Abu Dhabi"></option>
+          <option value="London"></option>
+          <option value="Manchester"></option>
+          <option value="New York"></option>
+          <option value="Los Angeles"></option>
+          <option value="Chicago"></option>
+          <option value="Houston"></option>
+          <option value="Toronto"></option>
+          <option value="Vancouver"></option>
+          <option value="Singapore"></option>
+          <option value="Sydney"></option>
+          <option value="Melbourne"></option>
+          <option value="Berlin"></option>
+          <option value="Istanbul"></option>
+        </datalist>
+
+        <div class="location-tools">
+          <div class="fld">
+            <label>Search Strategy</label>
+            <select id="b-location-mode">
+              <option value="smart" selected>Smart fallback</option>
+              <option value="exact">Exact only</option>
+              <option value="broad">Broad coverage</option>
+            </select>
+          </div>
+          <div class="location-plan">
+            <div class="location-plan-label">Query plan</div>
+            <div class="location-plan-text" id="b-loc-plan">Exact city + region + country, then broader fallback if needed.</div>
+          </div>
+          <button class="btn-outline location-verify-btn" id="b-verify-location-btn" type="button">Verify Location</button>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sc-title">Company Type & Industry</div>
+
+        <div class="form-grid fg-2">
+          <div class="fld">
+            <label>Company Types</label>
+            <div class="check-group" id="b-types">
+              <label class="check-pill checked"><input type="checkbox" value="exporter" checked>📦 Exporter</label>
+              <label class="check-pill checked"><input type="checkbox" value="importer" checked>📥 Importer</label>
+              <label class="check-pill checked"><input type="checkbox" value="manufacturer" checked>🏭 Manufacturer</label>
+              <label class="check-pill checked"><input type="checkbox" value="trading company" checked>🤝 Trading</label>
+              <label class="check-pill"><input type="checkbox" value="wholesaler">🏪 Wholesaler</label>
+              <label class="check-pill"><input type="checkbox" value="supplier">🔧 Supplier</label>
+              <label class="check-pill"><input type="checkbox" value="distributor">🚚 Distributor</label>
+            </div>
+          </div>
+          <div class="fld">
+            <label>Industries / Keywords (press Enter to add)</label>
+            <div class="tag-wrap" id="b-industries-wrap" data-focus-target="b-ind-input">
+              <span class="tag-pill">All Industries<span class="del" data-remove-tag>×</span></span>
+              <input class="tag-input-hidden" id="b-ind-input" placeholder="+ add industry...">
+            </div>
+            <div class="field-help">Use product or industry terms like <strong>textiles</strong>, <strong>handicrafts</strong>, <strong>furniture</strong>, or <strong>auto parts</strong>.</div>
+            <div class="suggestion-row" id="b-industry-suggestions">
+              <button class="suggestion-chip" type="button" data-add-tag="textiles" data-wrap-id="b-industries-wrap">Textiles</button>
+              <button class="suggestion-chip" type="button" data-add-tag="garments" data-wrap-id="b-industries-wrap">Garments</button>
+              <button class="suggestion-chip" type="button" data-add-tag="handicrafts" data-wrap-id="b-industries-wrap">Handicrafts</button>
+              <button class="suggestion-chip" type="button" data-add-tag="furniture" data-wrap-id="b-industries-wrap">Furniture</button>
+              <button class="suggestion-chip" type="button" data-add-tag="ceramics" data-wrap-id="b-industries-wrap">Ceramics</button>
+              <button class="suggestion-chip" type="button" data-add-tag="steel" data-wrap-id="b-industries-wrap">Steel</button>
+              <button class="suggestion-chip" type="button" data-add-tag="chemicals" data-wrap-id="b-industries-wrap">Chemicals</button>
+              <button class="suggestion-chip" type="button" data-add-tag="electronics" data-wrap-id="b-industries-wrap">Electronics</button>
+              <button class="suggestion-chip" type="button" data-add-tag="food products" data-wrap-id="b-industries-wrap">Food Products</button>
+              <button class="suggestion-chip" type="button" data-add-tag="auto parts" data-wrap-id="b-industries-wrap">Auto Parts</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid fg-3" style="margin-top:14px">
+          <div class="fld">
+            <label>Max Results</label>
+            <select id="b-max">
+              <option value="20">20 results</option>
+              <option value="50" selected>50 results</option>
+              <option value="100">100 results</option>
+              <option value="200">200 results</option>
+              <option value="500">500 results</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Min Rating (Google)</label>
+            <div class="range-wrap">
+              <div class="range-row"><span style="font-size:12px;color:var(--text2)">Filter</span><span class="range-val" id="b-rating-val">Any</span></div>
+              <input type="range" min="0" max="5" step="0.5" value="0" id="b-rating-range">
+            </div>
+          </div>
+          <div class="fld">
+            <label>Language</label>
+            <select id="b-lang">
+              <option value="en">English</option>
+              <option value="hi">Hindi</option>
+              <option value="ar">Arabic</option>
+              <option value="zh">Chinese</option>
+              <option value="de">German</option>
+              <option value="fr">French</option>
+              <option value="es">Spanish</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <button class="btn-run" id="b-run-btn" data-run-module="business">
+            🔍 &nbsp; Find Business Leads Worldwide
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress -->
+      <div class="progress-card" id="b-prog">
+        <div class="prog-top">
+          <div class="prog-label"><div class="spinner"></div><span id="b-prog-status">Starting...</span></div>
+          <span class="prog-pct" id="b-prog-pct">0%</span>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar" id="b-prog-bar"></div></div>
+        <div class="prog-log" id="b-prog-log"></div>
+      </div>
+
+      <div class="error-bar" id="b-err"></div>
+
+      <!-- Results -->
+      <div class="results-panel" id="b-results">
+        <div class="rp-header">
+          <div class="rp-title">🏭 Business Leads <span style="font-size:13px;color:var(--text2);font-family:'JetBrains Mono',monospace" id="b-res-count"></span></div>
+          <div class="rp-actions">
+            <button class="btn-green" data-export-module="business" data-export-format="csv">⬇ CSV</button>
+            <button class="btn-outline" data-export-module="business" data-export-format="json">{ } JSON</button>
+            <button class="btn-outline danger" data-clear-module="business">Clear</button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <input class="filter-search" placeholder="🔍 Search leads..." data-search-module="business" id="b-search-input">
+          <button class="chip on" data-module="business" data-filter="all">All</button>
+          <button class="chip" data-module="business" data-filter="export">Exporters</button>
+          <button class="chip" data-module="business" data-filter="import">Importers</button>
+          <button class="chip" data-module="business" data-filter="manufacturer">Mfg</button>
+          <button class="chip" data-module="business" data-filter="trading">Trading</button>
+          <button class="chip" data-module="business" data-filter="phone">📞 Has Phone</button>
+          <button class="chip" data-module="business" data-filter="web">🌐 Has Website</button>
+          <button class="chip" data-module="business" data-filter="rated">⭐ Rated 4+</button>
+        </div>
+
+        <div class="card-grid" id="b-grid"></div>
+        <div class="empty" id="b-empty" style="display:none">
+          <div class="empty-ico">🔎</div>
+          <div class="empty-t">No results match</div>
+          <div>Try a different filter</div>
+        </div>
+        <div class="pgn" id="b-pgn"></div>
+      </div>
+    </div>
+
+    <!-- ============ JOBS PAGE ============ -->
+    <div class="page" id="page-jobs">
+
+      <div class="page-header">
+        <div class="page-eyebrow">Career Intelligence</div>
+        <div class="page-title">Global Job<br>Search Engine</div>
+        <div class="page-desc">Scrape live job listings from LinkedIn, Indeed, Glassdoor, and Naukri for any role, city, or country worldwide.</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card blue"><div class="stat-num" id="js-total">0</div><div class="stat-lbl">Jobs Found</div></div>
+        <div class="stat-card teal"><div class="stat-num" id="js-remote">0</div><div class="stat-lbl">Remote Jobs</div></div>
+        <div class="stat-card orange"><div class="stat-num" id="js-salary">0</div><div class="stat-lbl">With Salary</div></div>
+        <div class="stat-card purple"><div class="stat-num" id="js-new">0</div><div class="stat-lbl">Posted &lt;7d</div></div>
+      </div>
+
+      <div class="search-card">
+        <div class="sc-title">Job Search Configuration</div>
+
+        <div class="form-grid fg-3">
+          <div class="fld">
+            <label>Job Title / Role</label>
+            <input type="text" id="j-title" placeholder="Software Developer, Marketing Manager..." value="Software Developer">
+          </div>
+          <div class="fld">
+            <label>Keywords / Skills</label>
+            <div class="tag-wrap" id="j-skills-wrap" data-focus-target="j-skill-input">
+              <span class="tag-pill">React<span class="del" data-remove-tag>×</span></span>
+              <span class="tag-pill">Node.js<span class="del" data-remove-tag>×</span></span>
+              <input class="tag-input-hidden" id="j-skill-input" placeholder="+ skill...">
+            </div>
+          </div>
+          <div class="fld">
+            <label>Job Source</label>
+            <select id="j-source">
+              <option value="linkedin">LinkedIn Jobs</option>
+              <option value="indeed">Indeed</option>
+              <option value="glassdoor">Glassdoor</option>
+              <option value="naukri">Naukri.com (India)</option>
+              <option value="google_jobs">Google Jobs</option>
+              <option value="all" selected>All Sources</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sc-title">Location Targeting</div>
+
+        <div class="form-grid fg-4">
+          <div class="fld">
+            <label>Country</label>
+            <select id="j-country">
+              <option value="">— Any —</option>
+              <option value="India" selected>🇮🇳 India</option>
+              <option value="United States">🇺🇸 United States</option>
+              <option value="United Kingdom">🇬🇧 United Kingdom</option>
+              <option value="UAE">🇦🇪 UAE</option>
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="Australia">🇦🇺 Australia</option>
+              <option value="Germany">🇩🇪 Germany</option>
+              <option value="Singapore">🇸🇬 Singapore</option>
+              <option value="Remote">🌐 Remote/Worldwide</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>State / Region</label>
+            <input type="text" id="j-state" list="b-state-suggestions" placeholder="e.g. Maharashtra, Texas...">
+          </div>
+          <div class="fld">
+            <label>City</label>
+            <input type="text" id="j-city" list="b-city-suggestions" placeholder="Delhi, Mumbai, New York...">
+          </div>
+          <div class="fld">
+            <label>Locality / Area</label>
+            <input type="text" id="j-area" placeholder="Business Bay, MIDC, Downtown...">
+          </div>
+        </div>
+
+        <div class="world-hint">
+          <span class="world-globe">🌍</span>
+          <div>
+            <strong style="color:var(--text)">Targeting:</strong>
+            <span id="j-loc-hint" style="color:var(--blue)">India</span>
+            <span style="display:block;font-size:11px;margin-top:2px;font-family:'JetBrains Mono',monospace">Jobs search uses the normalized location and fallback variants below</span>
+          </div>
+        </div>
+
+        <div class="location-assist" id="j-loc-assist">
+          <div class="location-assist-line" id="j-loc-normalized">Normalized target: India</div>
+          <div class="location-assist-line ok" id="j-loc-verified" style="display:none"></div>
+          <div class="location-assist-line warn" id="j-loc-warning" style="display:none"></div>
+        </div>
+
+        <div class="location-tools">
+          <div class="fld">
+            <label>Search Strategy</label>
+            <select id="j-location-mode">
+              <option value="smart" selected>Smart fallback</option>
+              <option value="exact">Exact only</option>
+              <option value="broad">Broad coverage</option>
+            </select>
+          </div>
+          <div class="location-plan">
+            <div class="location-plan-label">Query plan</div>
+            <div class="location-plan-text" id="j-loc-plan">Exact city + region + country, then broader fallback if needed.</div>
+          </div>
+          <button class="btn-outline location-verify-btn" id="j-verify-location-btn" type="button">Verify Location</button>
+        </div>
+
+        <div class="form-grid fg-2" style="margin-top:14px">
+          <div class="fld">
+            <label>Work Type</label>
+            <select id="j-work-type">
+              <option value="all" selected>All Types</option>
+              <option value="remote">Remote Only</option>
+              <option value="onsite">On-site Only</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Experience Level</label>
+            <select id="j-exp">
+              <option value="all" selected>All Levels</option>
+              <option value="entry">Entry Level (0-2yr)</option>
+              <option value="mid">Mid Level (2-5yr)</option>
+              <option value="senior">Senior (5+yr)</option>
+              <option value="lead">Lead / Manager</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid fg-3" style="margin-top:14px">
+          <div class="fld">
+            <label>Job Type</label>
+            <select id="j-type">
+              <option value="all" selected>All</option>
+              <option value="fulltime">Full-time</option>
+              <option value="parttime">Part-time</option>
+              <option value="contract">Contract</option>
+              <option value="internship">Internship</option>
+              <option value="freelance">Freelance</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Posted Within</label>
+            <select id="j-posted">
+              <option value="1">Last 24 hours</option>
+              <option value="7" selected>Last 7 days</option>
+              <option value="14">Last 14 days</option>
+              <option value="30">Last 30 days</option>
+              <option value="90">Last 3 months</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Max Results</label>
+            <select id="j-max">
+              <option value="25">25 jobs</option>
+              <option value="50" selected>50 jobs</option>
+              <option value="100">100 jobs</option>
+              <option value="200">200 jobs</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <button class="btn-run" id="j-run-btn" data-run-module="jobs">
+            💼 &nbsp; Search Jobs Worldwide
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-card" id="j-prog">
+        <div class="prog-top">
+          <div class="prog-label"><div class="spinner"></div><span id="j-prog-status">Starting...</span></div>
+          <span class="prog-pct" id="j-prog-pct">0%</span>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar" id="j-prog-bar"></div></div>
+        <div class="prog-log" id="j-prog-log"></div>
+      </div>
+
+      <div class="error-bar" id="j-err"></div>
+
+      <div class="results-panel" id="j-results">
+        <div class="rp-header">
+          <div class="rp-title">💼 Job Listings <span style="font-size:13px;color:var(--text2);font-family:'JetBrains Mono',monospace" id="j-res-count"></span></div>
+          <div class="rp-actions">
+            <button class="btn-green" data-export-module="jobs" data-export-format="csv">⬇ CSV</button>
+            <button class="btn-outline" data-export-module="jobs" data-export-format="json">{ } JSON</button>
+            <button class="btn-outline danger" data-clear-module="jobs">Clear</button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <input class="filter-search" placeholder="🔍 Search jobs..." data-search-module="jobs">
+          <button class="chip on" data-module="jobs" data-filter="all">All</button>
+          <button class="chip" data-module="jobs" data-filter="remote">🌐 Remote</button>
+          <button class="chip" data-module="jobs" data-filter="salary">💰 Has Salary</button>
+          <button class="chip" data-module="jobs" data-filter="new">🆕 &lt;7 days</button>
+          <button class="chip" data-module="jobs" data-filter="fulltime">Full-time</button>
+          <button class="chip" data-module="jobs" data-filter="contract">Contract</button>
+        </div>
+
+        <div class="card-grid" id="j-grid"></div>
+        <div class="empty" id="j-empty" style="display:none">
+          <div class="empty-ico">💼</div>
+          <div class="empty-t">No jobs match this filter</div>
+        </div>
+        <div class="pgn" id="j-pgn"></div>
+      </div>
+    </div>
+
+    <!-- ============ PEOPLE FINDER PAGE ============ -->
+    <div class="page" id="page-people">
+
+      <div class="page-header">
+        <div class="page-eyebrow">People Intelligence</div>
+        <div class="page-title">People<br>Finder</div>
+        <div class="page-desc">Find decision makers, professionals, and leads by name, company, role, or location from LinkedIn and public sources.</div>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card blue"><div class="stat-num" id="pf-total">0</div><div class="stat-lbl">People Found</div></div>
+        <div class="stat-card teal"><div class="stat-num" id="pf-email">0</div><div class="stat-lbl">With Email</div></div>
+        <div class="stat-card orange"><div class="stat-num" id="pf-phone">0</div><div class="stat-lbl">With Phone</div></div>
+        <div class="stat-card purple"><div class="stat-num" id="pf-linkedin">0</div><div class="stat-lbl">LinkedIn URLs</div></div>
+      </div>
+
+      <div class="search-card">
+        <div class="sc-title">Target Person / Role</div>
+
+        <div class="form-grid fg-3">
+          <div class="fld">
+            <label>Full Name (optional)</label>
+            <input type="text" id="p-name" placeholder="e.g. Rahul Sharma, John Smith...">
+          </div>
+          <div class="fld">
+            <label>Job Title / Role</label>
+            <input type="text" id="p-role" placeholder="CEO, Export Manager, Director...">
+          </div>
+          <div class="fld">
+            <label>Company Name (optional)</label>
+            <input type="text" id="p-company" placeholder="Company or industry...">
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="sc-title">Location Targeting</div>
+
+        <div class="form-grid fg-4">
+          <div class="fld">
+            <label>Country</label>
+            <select id="p-country">
+              <option value="">— Any Country —</option>
+              <option value="India" selected>🇮🇳 India</option>
+              <option value="United States">🇺🇸 United States</option>
+              <option value="United Kingdom">🇬🇧 United Kingdom</option>
+              <option value="UAE">🇦🇪 UAE</option>
+              <option value="Canada">🇨🇦 Canada</option>
+              <option value="Australia">🇦🇺 Australia</option>
+              <option value="Germany">🇩🇪 Germany</option>
+              <option value="Singapore">🇸🇬 Singapore</option>
+              <option value="Saudi Arabia">🇸🇦 Saudi Arabia</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>State / Province</label>
+            <input type="text" id="p-state" list="b-state-suggestions" placeholder="Uttar Pradesh, California...">
+          </div>
+          <div class="fld">
+            <label>City</label>
+            <input type="text" id="p-city" list="b-city-suggestions" placeholder="Moradabad, Mumbai...">
+          </div>
+          <div class="fld">
+            <label>Locality / Area</label>
+            <input type="text" id="p-area" placeholder="Industrial Area, Downtown, DIFC...">
+          </div>
+        </div>
+
+        <div class="world-hint">
+          <span class="world-globe">🌍</span>
+          <div>
+            <strong style="color:var(--text)">Targeting:</strong>
+            <span id="p-loc-hint" style="color:var(--blue)">India</span>
+            <span style="display:block;font-size:11px;margin-top:2px;font-family:'JetBrains Mono',monospace">People search uses the normalized location and fallback variants below</span>
+          </div>
+        </div>
+
+        <div class="location-assist" id="p-loc-assist">
+          <div class="location-assist-line" id="p-loc-normalized">Normalized target: India</div>
+          <div class="location-assist-line ok" id="p-loc-verified" style="display:none"></div>
+          <div class="location-assist-line warn" id="p-loc-warning" style="display:none"></div>
+        </div>
+
+        <div class="location-tools">
+          <div class="fld">
+            <label>Search Strategy</label>
+            <select id="p-location-mode">
+              <option value="smart" selected>Smart fallback</option>
+              <option value="exact">Exact only</option>
+              <option value="broad">Broad coverage</option>
+            </select>
+          </div>
+          <div class="location-plan">
+            <div class="location-plan-label">Query plan</div>
+            <div class="location-plan-text" id="p-loc-plan">Exact city + region + country, then broader fallback if needed.</div>
+          </div>
+          <button class="btn-outline location-verify-btn" id="p-verify-location-btn" type="button">Verify Location</button>
+        </div>
+
+        <div class="form-grid fg-1" style="margin-top:14px">
+          <div class="fld">
+            <label>Source</label>
+            <select id="p-source">
+              <option value="linkedin" selected>LinkedIn</option>
+              <option value="google">Google-style keywords</option>
+              <option value="both">LinkedIn + broader keywords</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid fg-3" style="margin-top:14px">
+          <div class="fld">
+            <label>Industry</label>
+            <input type="text" id="p-industry" placeholder="Textiles, IT, Handicrafts...">
+          </div>
+          <div class="fld">
+            <label>Seniority Level</label>
+            <select id="p-seniority">
+              <option value="all" selected>All Levels</option>
+              <option value="C-level">C-Level (CEO, CFO, CTO)</option>
+              <option value="director">Director / VP</option>
+              <option value="manager">Manager</option>
+              <option value="owner">Owner / Proprietor</option>
+              <option value="any">Any</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Max Results</label>
+            <select id="p-max">
+              <option value="20">20 people</option>
+              <option value="50" selected>50 people</option>
+              <option value="100">100 people</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="margin-top:18px">
+          <button class="btn-run" id="p-run-btn" data-run-module="people">
+            👤 &nbsp; Find People & Decision Makers
+          </button>
+        </div>
+      </div>
+
+      <div class="progress-card" id="p-prog">
+        <div class="prog-top">
+          <div class="prog-label"><div class="spinner"></div><span id="p-prog-status">Starting...</span></div>
+          <span class="prog-pct" id="p-prog-pct">0%</span>
+        </div>
+        <div class="prog-bar-bg"><div class="prog-bar" id="p-prog-bar"></div></div>
+        <div class="prog-log" id="p-prog-log"></div>
+      </div>
+
+      <div class="error-bar" id="p-err"></div>
+
+      <div class="results-panel" id="p-results">
+        <div class="rp-header">
+          <div class="rp-title">👤 People Found <span style="font-size:13px;color:var(--text2);font-family:'JetBrains Mono',monospace" id="p-res-count"></span></div>
+          <div class="rp-actions">
+            <button class="btn-green" data-export-module="people" data-export-format="csv">⬇ CSV</button>
+            <button class="btn-outline" data-export-module="people" data-export-format="json">{ } JSON</button>
+            <button class="btn-outline danger" data-clear-module="people">Clear</button>
+          </div>
+        </div>
+
+        <div class="filter-bar">
+          <input class="filter-search" placeholder="🔍 Search people..." data-search-module="people">
+          <button class="chip on" data-module="people" data-filter="all">All</button>
+          <button class="chip" data-module="people" data-filter="email">📧 Has Email</button>
+          <button class="chip" data-module="people" data-filter="phone">📞 Has Phone</button>
+          <button class="chip" data-module="people" data-filter="linkedin">in LinkedIn</button>
+          <button class="chip" data-module="people" data-filter="clevel">👑 C-Level</button>
+        </div>
+
+        <div class="card-grid" id="p-grid"></div>
+        <div class="empty" id="p-empty" style="display:none">
+          <div class="empty-ico">👤</div>
+          <div class="empty-t">No people match this filter</div>
+        </div>
+        <div class="pgn" id="p-pgn"></div>
+      </div>
+    </div>
+
+    <!-- ============ SAVED PAGE ============ -->
+    <div class="page" id="page-saved">
+      <div class="page-header">
+        <div class="page-eyebrow">My Collection</div>
+        <div class="page-title">Saved Leads</div>
+        <div class="page-desc">Leads you've bookmarked across all modules.</div>
+      </div>
+      <div class="empty">
+        <div class="empty-ico">🔖</div>
+        <div class="empty-t">No saved leads yet</div>
+        <div>Click the bookmark icon on any lead to save it here</div>
+      </div>
+    </div>
+
+    <!-- ============ EXPORTS PAGE ============ -->
+    <div class="page" id="page-exports">
+      <div class="page-header">
+        <div class="page-eyebrow">Data Export</div>
+        <div class="page-title">Export Center</div>
+        <div class="page-desc">Download all your scraped data in different formats.</div>
+      </div>
+      <div class="search-card">
+        <div class="sc-title">Export Options</div>
+        <div class="form-grid fg-3">
+          <div class="fld">
+            <label>Dataset</label>
+            <select id="exp-dataset">
+              <option value="business">Business Leads</option>
+              <option value="jobs">Job Listings</option>
+              <option value="people">People Finder</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Format</label>
+            <select id="exp-format">
+              <option value="csv">CSV (Excel-compatible)</option>
+              <option value="json">JSON</option>
+              <option value="tsv">TSV (Tab-separated)</option>
+              <option value="sheet">Browser Sheet View</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>Filter</label>
+            <select id="exp-filter">
+              <option value="all">All records</option>
+              <option value="phone">With phone only</option>
+              <option value="website">With website only</option>
+              <option value="both">Phone AND website</option>
+            </select>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn-run" id="exp-run-btn">📤 &nbsp; Export Data</button>
+        </div>
+      </div>
+      <div id="exp-stats" style="display:none">
+        <div class="stats-row" style="margin-top:20px">
+          <div class="stat-card blue"><div class="stat-num" id="exp-biz-ct">0</div><div class="stat-lbl">Business Leads</div></div>
+          <div class="stat-card teal"><div class="stat-num" id="exp-job-ct">0</div><div class="stat-lbl">Job Listings</div></div>
+          <div class="stat-card orange"><div class="stat-num" id="exp-ppl-ct">0</div><div class="stat-lbl">People</div></div>
+          <div class="stat-card purple"><div class="stat-num" id="exp-total-ct">0</div><div class="stat-lbl">Total Records</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- MOBILE NAV -->
+<nav class="mob-nav">
+  <div class="mob-nav-inner">
+    <div class="mob-nav-item active" data-page="business"><span class="ico">🏭</span><span>Business</span></div>
+    <div class="mob-nav-item" data-page="jobs"><span class="ico">💼</span><span>Jobs</span></div>
+    <div class="mob-nav-item" data-page="people"><span class="ico">👤</span><span>People</span></div>
+    <div class="mob-nav-item" data-page="exports"><span class="ico">📤</span><span>Export</span></div>
+  </div>
+</nav>
+
+<script src="scripts/state.js"></script>
+<script src="scripts/ui.js"></script>
+<script src="scripts/apify.js"></script>
+<script src="scripts/searches.js"></script>
+<script src="scripts/render.js"></script>
+<script src="scripts/export.js"></script>
+<script src="scripts/init.js"></script>
+</body>
+</html>
