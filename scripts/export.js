@@ -39,6 +39,7 @@ const EXPORT_SCHEMAS = {
     ['seniority', 'Seniority'],
     ['source', 'Source'],
     ['linkedin', 'LinkedIn URL'],
+    ['profileUrl', 'Profile URL'],
     ['summary', 'Summary'],
   ],
 };
@@ -174,7 +175,7 @@ function openSheetView(module, filter, records) {
     )
     .join('');
   const csvData = buildDelimitedFile(records, ',');
-  const csvDownloadName = `leadscope_${module}_${Date.now()}.csv`;
+  const downloadName = `leadscope_${module}_${Date.now()}.csv`;
 
   newWindow.document.write(`<!DOCTYPE html>
 <html lang="en">
@@ -185,12 +186,17 @@ function openSheetView(module, filter, records) {
 <style>
   body {
     margin: 0;
-    background: #0b1020;
-    color: #e8edf7;
-    font-family: Arial, sans-serif;
+    background: #f5efe6;
+    color: #241a12;
+    font-family: Manrope, Arial, sans-serif;
   }
   .wrap {
     padding: 24px;
+  }
+  h1 {
+    margin: 0 0 12px;
+    font-family: Fraunces, Georgia, serif;
+    letter-spacing: -0.03em;
   }
   .toolbar {
     display: flex;
@@ -204,21 +210,21 @@ function openSheetView(module, filter, records) {
     align-items: center;
     padding: 10px 14px;
     border-radius: 8px;
-    background: #2563eb;
+    background: #1f5eff;
     color: #fff;
     text-decoration: none;
     font-weight: 600;
   }
   .toolbar p {
     margin: 0;
-    color: #9fb0d0;
+    color: #66584b;
     font-size: 14px;
   }
   .table-shell {
     overflow: auto;
-    border: 1px solid #22304d;
+    border: 1px solid #ddd0be;
     border-radius: 12px;
-    background: #11182c;
+    background: rgba(255, 255, 255, 0.88);
   }
   table {
     width: 100%;
@@ -227,7 +233,7 @@ function openSheetView(module, filter, records) {
   }
   th, td {
     padding: 10px 12px;
-    border-bottom: 1px solid #22304d;
+    border-bottom: 1px solid #e7dccf;
     text-align: left;
     vertical-align: top;
     font-size: 13px;
@@ -237,8 +243,8 @@ function openSheetView(module, filter, records) {
   th {
     position: sticky;
     top: 0;
-    background: #16213a;
-    color: #8fd3ff;
+    background: #fcf8f2;
+    color: #1f5eff;
   }
 </style>
 </head>
@@ -246,7 +252,7 @@ function openSheetView(module, filter, records) {
   <div class="wrap">
     <h1>${esc(heading)}</h1>
     <div class="toolbar">
-      <a download="${esc(csvDownloadName)}" href="data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csvData}`)}">Download CSV</a>
+      <a download="${esc(downloadName)}" href="data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${csvData}`)}">Download CSV</a>
       <p>${esc(subtitle)}</p>
     </div>
     <div class="table-shell">

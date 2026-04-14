@@ -23,7 +23,15 @@ async function runApify(actorId, input, prefix) {
 
   if (!runResponse.ok) {
     const errorData = await runResponse.json().catch(() => ({}));
-    throw new Error(errorData.error?.message || `HTTP ${runResponse.status} - Check your API key`);
+    if (runResponse.status === 401) {
+      throw new Error(
+        'Apify returned 401 Unauthorized. Enter a valid Apify API key in the sidebar, then retry. Remove any stale saved key if this keeps happening.'
+      );
+    }
+
+    throw new Error(
+      errorData.error?.message || `Apify request failed with HTTP ${runResponse.status}.`
+    );
   }
 
   const runData = await runResponse.json();

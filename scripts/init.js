@@ -7,7 +7,7 @@ document.getElementById('b-city').value = 'Moradabad';
 updateLocationHint('b');
 updateLocationHint('j');
 updateLocationHint('p');
-syncKey(readStoredKey() || getKey());
+syncKey(getKey());
 renderSupportLog();
 
 document.querySelectorAll('.nav-item[data-page]').forEach((item) => {
@@ -19,11 +19,10 @@ document.querySelectorAll('.mob-nav-item[data-page]').forEach((item) => {
 });
 
 document.getElementById('sidebar-key').addEventListener('input', (event) => {
-  syncKey(event.target.value, { persist: true });
+  syncKey(event.target.value);
 });
 
 document.getElementById('remove-key-btn').addEventListener('click', () => {
-  clearStoredKey();
   syncKey('');
 });
 

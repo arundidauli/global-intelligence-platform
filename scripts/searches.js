@@ -92,7 +92,7 @@ function getJobCountryCode(country) {
   return JOB_COUNTRY_CODES[country] || 'US';
 }
 
-function normalizePeopleSearchResults(items, sourceLabel) {
+function normalizePeopleSearchResults(items, sourceLabel, linkedinOnly = true) {
   const rows = [];
 
   for (const item of items) {
@@ -118,10 +118,15 @@ function normalizePeopleSearchResults(items, sourceLabel) {
 
   return rows
     .filter((row) => row.link || row.title)
-    .filter((row) => /linkedin\.com\/in\//i.test(row.link) || /linkedin/i.test(row.title))
+    .filter((row) =>
+      linkedinOnly
+        ? /linkedin\.com\/(in|pub)\//i.test(row.link) || /linkedin/i.test(row.title)
+        : true
+    )
     .map((row) => {
       const normalizedTitle = row.title.replace(/\s*\|\s*LinkedIn.*$/i, '').trim();
       const [namePart, rolePart] = normalizedTitle.split(/\s+-\s+/);
+      const isLinkedInProfile = /linkedin\.com\/(in|pub)\//i.test(row.link);
       return {
         name: namePart || normalizedTitle || 'Unknown',
         title: rolePart || row.snippet || '',
@@ -129,13 +134,42 @@ function normalizePeopleSearchResults(items, sourceLabel) {
         location: '',
         email: '',
         phone: '',
-        linkedin: row.link,
+        linkedin: isLinkedInProfile ? row.link : '',
+        profileUrl: row.link,
         source: row.source,
         summary: row.snippet?.slice(0, 150) || '',
         avatar: '',
         seniority: detectSeniority(`${rolePart || ''} ${row.snippet || ''}`),
       };
     });
+}
+
+function detectJobWorkplaceType(item) {
+  const workplace = String(item.workplaceType || item.workType || item.workArrangement || '').toLowerCase();
+  const title = String(item.title || item.positionName || item.jobTitle || '').toLowerCase();
+  const description = String(item.description || '').toLowerCase();
+  const haystack = `${title} ${description} ${workplace}`;
+
+  if (/hybrid/.test(haystack)) {
+    return 'hybrid';
+  }
+
+  if (/remote|work from home|wfh/.test(haystack)) {
+    return 'remote';
+  }
+
+  if (/on[- ]?site|onsite|in[- ]office|office-based/.test(haystack)) {
+    return 'onsite';
+  }
+
+  return 'unknown';
+}
+
+function normalizeJobTypeLabel(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[\s_-]+/g, ' ')
+    .trim();
 }
 
 function buildBusinessLocationVariants() {
@@ -396,9 +430,28 @@ async function runJobSearch() {
     senior: 'senior',
     lead: 'lead',
   };
+  const jobTypeLabelMap = {
+    fulltime: 'full time',
+    parttime: 'part time',
+    contract: 'contract',
+    internship: 'internship',
+    freelance: 'freelance',
+  };
   const keywordParts = [title, ...skills];
   if (experienceLabelMap[experience]) {
     keywordParts.push(experienceLabelMap[experience]);
+  }
+  if (jobTypeLabelMap[jobType]) {
+    keywordParts.push(jobTypeLabelMap[jobType]);
+  }
+  if (workType === 'remote') {
+    keywordParts.push('remote');
+  }
+  if (workType === 'hybrid') {
+    keywordParts.push('hybrid');
+  }
+  if (workType === 'onsite') {
+    keywordParts.push('on-site');
   }
 
   const keywords = keywordParts.join(' ');
@@ -411,9 +464,8 @@ async function runJobSearch() {
     naukri: 'misceres~google-jobs-scraper',
   };
   const actor = actorMap[source] || 'misceres~google-jobs-scraper';
-  const searchText = workType === 'remote' ? `${keywords} remote` : keywords;
   const startUrls = (locationVariants.length ? locationVariants : [''])
-    .map((variant) => `https://www.google.com/search?q=${encodeURIComponent(`${searchText} jobs ${variant}`.trim())}&ibp=htl;jobs`)
+    .map((variant) => `https://www.google.com/search?q=${encodeURIComponent(`${keywords} jobs ${variant}`.trim())}&ibp=htl;jobs`)
     .slice(0, 5)
     .map((url) => ({ url }));
   const countryCode = getJobCountryCode(locationProfile.country || country);
@@ -447,25 +499,26 @@ async function runJobSearch() {
 
     const normalizedJobType = jobType.toLowerCase();
     window.leadScope.state.jobs.all = items
-      .map((item) => ({
-        title: item.title || item.positionName || item.jobTitle || 'Unknown',
-        company: item.company || item.companyName || '',
-        location: item.location || item.city || '',
-        type: item.employmentType || item.jobType || '',
-        remote:
-          item.remote ||
-          item.workplaceType === 'REMOTE' ||
-          (item.title || '').toLowerCase().includes('remote'),
-        salary: item.salary || item.salaryRange || '',
-        posted: item.postedAt || item.datePosted || '',
-        url: item.url || item.jobUrl || item.externalApplyUrl || '',
-        source: item.source || source,
-        description: item.description?.slice(0, 200) || '',
-        skills: item.skills || [],
-        logo: '',
-      }))
+      .map((item) => {
+        const workplaceType = detectJobWorkplaceType(item);
+        return {
+          title: item.title || item.positionName || item.jobTitle || 'Unknown',
+          company: item.company || item.companyName || '',
+          location: item.location || item.city || '',
+          type: item.employmentType || item.jobType || '',
+          workplaceType,
+          remote: workplaceType === 'remote',
+          salary: item.salary || item.salaryRange || '',
+          posted: item.postedAt || item.datePosted || '',
+          url: item.url || item.jobUrl || item.externalApplyUrl || '',
+          source: item.source || source,
+          description: item.description?.slice(0, 200) || '',
+          skills: item.skills || [],
+          logo: '',
+        };
+      })
       .filter((item) => {
-        if (workType === 'remote' && !item.remote) {
+        if (workType !== 'all' && item.workplaceType !== workType) {
           return false;
         }
 
@@ -473,7 +526,10 @@ async function runJobSearch() {
           return true;
         }
 
-        return (item.type || '').toLowerCase().includes(normalizedJobType.replace('fulltime', 'full'));
+        const normalizedType = normalizeJobTypeLabel(item.type);
+        const expectedType = normalizeJobTypeLabel(jobTypeLabelMap[normalizedJobType] || normalizedJobType);
+
+        return normalizedType.includes(expectedType);
       });
 
     setProgress('j', 100, 'Done!');
@@ -548,19 +604,35 @@ async function runPeopleSearch() {
   try {
     const actorId = 'apify/google-search-scraper';
     const countryCode = getJobCountryCode(locationProfile.country || country);
-    const queryVariants = (locationVariants.length ? locationVariants : [''])
-      .map((variant) =>
-        [searchBase, variant, 'site:linkedin.com/in']
-          .filter(Boolean)
-          .join(' ')
-      )
-      .slice(0, 5);
-    if (source === 'both') {
-      queryVariants.push(
-        [searchBase, location, 'site:linkedin.com/pub']
-          .filter(Boolean)
-          .join(' ')
-      );
+    const queryVariants = [];
+    const effectiveVariants = (locationVariants.length ? locationVariants : ['']).slice(0, 5);
+
+    if (source === 'linkedin' || source === 'both') {
+      effectiveVariants.forEach((variant) => {
+        queryVariants.push(
+          [searchBase, variant, 'site:linkedin.com/in']
+            .filter(Boolean)
+            .join(' ')
+        );
+      });
+
+      if (source === 'both') {
+        queryVariants.push(
+          [searchBase, location, 'site:linkedin.com/pub']
+            .filter(Boolean)
+            .join(' ')
+        );
+      }
+    }
+
+    if (source === 'google' || source === 'both') {
+      effectiveVariants.forEach((variant) => {
+        queryVariants.push(
+          [searchBase, variant]
+            .filter(Boolean)
+            .join(' ')
+        );
+      });
     }
 
     const items = await runApify(
@@ -577,10 +649,30 @@ async function runPeopleSearch() {
     addLog('p', `Processing ${items.length} search results...`, 'ok');
     setProgress('p', 95, 'Processing...');
 
-    window.leadScope.state.people.all = normalizePeopleSearchResults(
-      items,
-      source === 'linkedin' ? 'linkedin' : 'google'
-    ).slice(0, maxResults);
+    const normalizedPeople = [];
+
+    if (source === 'linkedin') {
+      normalizedPeople.push(...normalizePeopleSearchResults(items, 'linkedin', true));
+    } else if (source === 'google') {
+      normalizedPeople.push(...normalizePeopleSearchResults(items, 'google', false));
+    } else {
+      normalizedPeople.push(...normalizePeopleSearchResults(items, 'linkedin', true));
+      normalizedPeople.push(...normalizePeopleSearchResults(items, 'google', false));
+    }
+
+    const seen = new Set();
+    window.leadScope.state.people.all = normalizedPeople
+      .filter((person) => {
+        const dedupeKey = String(person.linkedin || `${person.name}|${person.title}|${person.location}`)
+          .toLowerCase()
+          .trim();
+        if (!dedupeKey || seen.has(dedupeKey)) {
+          return false;
+        }
+        seen.add(dedupeKey);
+        return true;
+      })
+      .slice(0, maxResults);
 
     setProgress('p', 100, 'Done!');
     addLog('p', `✓ ${window.leadScope.state.people.all.length} people found!`, 'ok');

@@ -135,11 +135,11 @@ function buildBizCard(item) {
         ${item.verified ? '<span class="badge b-new">✓ Verified</span>' : ''}
       </div>
       <div class="blc-meta">
-        ${item.address ? `<span class="mi">📍 ${esc(item.address)}</span>` : ''}
-        ${item.phone && phoneHref ? `<span class="mi">📞 <a href="${phoneHref}">${esc(item.phone)}</a></span>` : '<span class="mi" style="opacity:.4">📞 No phone</span>'}
-        ${item.website && websiteHref ? `<span class="mi">🌐 <a href="${websiteHref}" target="_blank" rel="noopener noreferrer">${esc(item.website.replace(/^https?:\/\//, '').split('/')[0])}</a></span>` : ''}
-        ${item.category ? `<span class="mi">🏷 ${esc(item.category)}</span>` : ''}
-        ${item.hours ? `<span class="mi">🕐 ${esc(item.hours)}</span>` : ''}
+        ${item.address ? `<span class="mi">Address ${esc(item.address)}</span>` : ''}
+        ${item.phone && phoneHref ? `<span class="mi">Phone <a href="${phoneHref}">${esc(item.phone)}</a></span>` : '<span class="mi" style="opacity:.4">Phone unavailable</span>'}
+        ${item.website && websiteHref ? `<span class="mi">Site <a href="${websiteHref}" target="_blank" rel="noopener noreferrer">${esc(item.website.replace(/^https?:\/\//, '').split('/')[0])}</a></span>` : ''}
+        ${item.category ? `<span class="mi">Category ${esc(item.category)}</span>` : ''}
+        ${item.hours ? `<span class="mi">Hours ${esc(item.hours)}</span>` : ''}
         ${mapsHref ? `<span class="mi"><a href="${mapsHref}" target="_blank" rel="noopener noreferrer" style="color:var(--blue)">Maps →</a></span>` : ''}
       </div>
     </div>
@@ -179,11 +179,11 @@ function buildJobCard(item) {
       <div class="jc-title">${esc(item.title)} ${isNew ? '<span class="badge b-new">NEW</span>' : ''}</div>
       <div class="jc-company">${esc(item.company || 'Unknown Company')}</div>
       <div class="jc-meta">
-        ${item.location ? `<span>📍 ${esc(item.location)}</span>` : ''}
-        ${item.type ? `<span>💼 ${esc(item.type)}</span>` : ''}
-        ${item.remote ? '<span>🌐 Remote</span>' : ''}
-        ${item.posted ? `<span>🕐 ${esc(item.posted)}</span>` : ''}
-        <span style="color:${sourceColor};font-size:11px;font-family:'JetBrains Mono',monospace">${esc(item.source || '')}</span>
+        ${item.location ? `<span>Location ${esc(item.location)}</span>` : ''}
+        ${item.type ? `<span>Type ${esc(item.type)}</span>` : ''}
+        ${item.remote ? '<span>Remote</span>' : item.workplaceType === 'hybrid' ? '<span>Hybrid</span>' : item.workplaceType === 'onsite' ? '<span>On-site</span>' : ''}
+        ${item.posted ? `<span>Posted ${esc(item.posted)}</span>` : ''}
+        <span style="color:${sourceColor};font-size:11px;font-family:'IBM Plex Mono',monospace">${esc(item.source || '')}</span>
       </div>
       ${item.description ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.5">${esc(item.description)}...</div>` : ''}
       <div class="jc-tags">
@@ -192,7 +192,7 @@ function buildJobCard(item) {
     </div>
     <div class="jc-right">
       ${item.salary ? `<div class="jc-salary">${esc(item.salary)}</div>` : ''}
-      ${applyHref ? `<a href="${applyHref}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--blue);text-decoration:none;font-family:'JetBrains Mono',monospace">Apply →</a>` : ''}
+      ${applyHref ? `<a href="${applyHref}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--blue);text-decoration:none;font-family:'IBM Plex Mono',monospace">Apply →</a>` : ''}
     </div>
   `;
 
@@ -205,6 +205,7 @@ function buildPeopleCard(item) {
   const emailHref = safeMailtoUrl(item.email);
   const phoneHref = safeTelUrl(item.phone);
   const linkedinHref = safeExternalUrl(item.linkedin);
+  const profileHref = safeExternalUrl(item.profileUrl);
 
   const initials = (item.name || '?')
     .split(' ')
@@ -226,16 +227,16 @@ function buildPeopleCard(item) {
       <div class="pc-name">${esc(item.name)} ${seniorityBadge}</div>
       <div class="pc-title-role">${esc(item.title || '—')}</div>
       <div class="pc-meta">
-        ${item.company ? `<span>🏢 ${esc(item.company)}</span>` : ''}
-        ${item.location ? `<span>📍 ${esc(item.location)}</span>` : ''}
-        ${item.email && emailHref ? `<span>📧 <a href="${emailHref}" style="color:var(--teal)">${esc(item.email)}</a></span>` : '<span style="opacity:.4">📧 No email</span>'}
-        ${item.phone && phoneHref ? `<span>📞 <a href="${phoneHref}" style="color:var(--teal)">${esc(item.phone)}</a></span>` : ''}
+        ${item.company ? `<span>Company ${esc(item.company)}</span>` : ''}
+        ${item.location ? `<span>Location ${esc(item.location)}</span>` : ''}
+        ${item.email && emailHref ? `<span>Email <a href="${emailHref}" style="color:var(--teal)">${esc(item.email)}</a></span>` : '<span style="opacity:.4">Email unavailable</span>'}
+        ${item.phone && phoneHref ? `<span>Phone <a href="${phoneHref}" style="color:var(--teal)">${esc(item.phone)}</a></span>` : ''}
       </div>
       ${item.summary ? `<div style="font-size:12px;color:var(--text2);margin-top:4px;line-height:1.5">${esc(item.summary)}...</div>` : ''}
     </div>
     <div class="pc-right">
       <div class="pc-source">${esc(item.source || '')}</div>
-      ${linkedinHref ? `<a href="${linkedinHref}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#0077b5;font-family:'JetBrains Mono',monospace;text-decoration:none">LinkedIn →</a>` : ''}
+      ${linkedinHref ? `<a href="${linkedinHref}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#0077b5;font-family:'IBM Plex Mono',monospace;text-decoration:none">LinkedIn →</a>` : profileHref ? `<a href="${profileHref}" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:var(--blue);font-family:'IBM Plex Mono',monospace;text-decoration:none">Open Result →</a>` : ''}
     </div>
   `;
 

@@ -8,12 +8,13 @@ LeadScope is a static frontend app for business lead discovery, job search, peop
 - Job discovery across multiple sources
 - People finder with LinkedIn-focused public search flows
 - CSV, TSV, JSON, and browser sheet exports
-- User-specific Apify API key saved in the browser
+- User-specific Apify API key entered per session
 - Static hosting friendly deployment
 
 ## Project Structure
 
 ```text
+index.html
 global_intelligence_platform.html
 scripts/
   apify.js
@@ -47,7 +48,7 @@ Open:
 http://localhost:8000/
 ```
 
-You can also open `global_intelligence_platform.html` directly, but using a local server is better for realistic testing.
+You can also open `index.html` directly, but using a local server is better for realistic testing.
 
 ## How Users Add Their Apify Key
 
@@ -55,14 +56,13 @@ You can also open `global_intelligence_platform.html` directly, but using a loca
 2. Click `Get Apify API Key` in the sidebar.
 3. Create or copy an Apify API key from the Apify console.
 4. Paste the key into the `Apify API Key` field.
-5. The key is saved in that user’s browser until they remove it.
+5. Use the key for the current session.
 
 Important:
 
 - Keys are not hardcoded in the project.
-- Keys are stored in the browser for that user only.
-- If `localStorage` is unavailable, the app falls back to browser cookies.
-- Users can remove the saved key using `Remove Saved Key`.
+- Keys are not persisted in `localStorage` or cookies.
+- Users must provide their own key each session.
 
 ## Export Formats
 
@@ -106,7 +106,7 @@ This project can be deployed as a static site on the Vercel Hobby plan.
 This app is designed for a client-side usage model:
 
 - Each user brings their own Apify key.
-- Each user stores that key in their own browser.
+- Each user enters their own key in the UI for the current session.
 - Your deployment does not need to store or manage shared Apify secrets.
 
 This is suitable for static hosting. If you ever want to use one shared platform-owned Apify key, move API calls behind a backend service.
@@ -120,8 +120,8 @@ Before production use, verify:
 - People finder runs and renders results
 - Export center downloads valid CSV, TSV, and JSON files
 - Browser sheet view opens correctly
-- Saved Apify key persists after refresh
-- Remove key flow clears the saved value
+- App loads correctly from the Vercel root URL
+- Key entry works for the current session
 - Mobile layout is usable
 - Browser console has no JavaScript errors
 

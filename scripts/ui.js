@@ -18,92 +18,31 @@ function switchPage(name, el, isMob = false) {
   updateExportStats();
 }
 
-function getApifyStorage() {
-  try {
-    return window.localStorage;
-  } catch (error) {
-    if (!window.leadScope.storageStatus.apifyUnavailableLogged) {
-      window.leadScope.storageStatus.apifyUnavailableLogged = true;
-      logSupportEntry('Access localStorage', error);
-    }
-    return null;
-  }
-}
-
-function getCookieValue(name) {
-  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = document.cookie.match(new RegExp(`(?:^|; )${escapedName}=([^;]*)`));
-  return match ? decodeURIComponent(match[1]) : '';
-}
-
-function setCookieValue(name, value, maxAgeSeconds = 60 * 60 * 24 * 365) {
-  document.cookie = `${name}=${encodeURIComponent(value)}; Max-Age=${maxAgeSeconds}; Path=/; SameSite=Lax`;
-}
-
-function removeCookieValue(name) {
-  document.cookie = `${name}=; Max-Age=0; Path=/; SameSite=Lax`;
-}
-
 function looksLikeApifyKey(value) {
   return /^apify_api_[A-Za-z0-9]+$/.test(String(value || '').trim());
 }
 
 function readStoredKey() {
-  const storage = getApifyStorage();
-  if (storage) {
-    return storage.getItem(window.leadScope.storageKeys.apifyApiKey) || '';
-  }
-
-  return getCookieValue(window.leadScope.storageKeys.apifyApiKey);
+  return '';
 }
 
 function saveStoredKey(value) {
-  const normalizedValue = String(value || '').trim();
-  const storage = getApifyStorage();
-
-  if (storage) {
-    if (normalizedValue) {
-      storage.setItem(window.leadScope.storageKeys.apifyApiKey, normalizedValue);
-    } else {
-      storage.removeItem(window.leadScope.storageKeys.apifyApiKey);
-    }
-    return true;
-  }
-
-  try {
-    if (normalizedValue) {
-      setCookieValue(window.leadScope.storageKeys.apifyApiKey, normalizedValue);
-    } else {
-      removeCookieValue(window.leadScope.storageKeys.apifyApiKey);
-    }
-    return true;
-  } catch (error) {
-    logSupportEntry('Persist Apify key', error);
-    return false;
-  }
+  return !String(value || '').trim() || true;
 }
 
 function clearStoredKey() {
-  return saveStoredKey('');
+  return true;
 }
 
 function syncKey(value, options = {}) {
-  const { persist = false } = options;
   const normalizedValue = value.trim();
-  let isStoredLocally = Boolean(normalizedValue && readStoredKey());
   const isValidApifyKey = looksLikeApifyKey(normalizedValue);
-
-  if (persist) {
-    isStoredLocally = saveStoredKey(normalizedValue) && Boolean(normalizedValue);
-  }
 
   document.getElementById('sidebar-key').value = normalizedValue;
   document.getElementById('key-status').textContent = normalizedValue
     ? !isValidApifyKey
       ? 'Key format looks invalid'
-      : isStoredLocally
-        ? '✓ Key saved in this browser'
-        : '✓ Key set for this tab'
+      : 'Key ready for this session'
     : 'No key entered';
   document.getElementById('key-dot').className = `dot ${
     normalizedValue ? (isValidApifyKey ? 'ok' : 'warn') : ''
